@@ -1,0 +1,9 @@
+class Encoder(nn.Module):
+    def __init__(self):
+        super(Encoder, self).__init__()
+        vgg = vgg16(pretrained=True)
+        self.feature = nn.Sequential(*list(vgg.features.children())[:23])
+
+    def forward(self, x):
+        x = self.feature(x)
+        return x
