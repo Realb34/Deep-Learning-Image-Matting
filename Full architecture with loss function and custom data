@@ -1,0 +1,33 @@
+class DeepMatting(nn.Module):
+    def __init__(self):
+        super(DeepMatting, self).__init__()
+        self.encoder = Encoder()
+        self.decoder = Decoder()
+
+    def forward(self, x):
+        x = self.encoder(x)
+        x = self.decoder(x)
+        return x
+class AlphaLoss(nn.Module):
+    def __init__(self):
+        super(AlphaLoss, self).__init__()
+
+    def forward(self, pred_alpha, gt_alpha):
+        return torch.mean(torch.abs(pred_alpha - gt_alpha))
+class CustomDataset(Dataset):
+    def __init__(self, images_dir, masks_dir):
+        self.images_dir = images_dir
+        self.masks_dir = masks_dir
+        self.image_files = os.listdir(images_dir)
+        self.transform = ToTensor()
+
+    def __len__(self):
+        return len(self.image_files)
+
+    def __getitem__(self, idx):
+        image_name = self.image_files[idx]
+        image_path = os.path.join(self.images_dir, image_name)
+        mask_path = os.path.join(self.masks_dir, image_name) # directly use image_name for mask
+        image = Image.open(image_path).convert('RGB').resize((224, 224))
+        mask = Image.open(mask_path).convert('L').resize((224, 224))
+        return self.transform(image).to(device), self.transform(mask).to(device)
