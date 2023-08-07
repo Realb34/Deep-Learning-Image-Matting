@@ -37,11 +37,11 @@ The evaluation section loads a test image, runs it through the model, and displa
 3. Run the evaluation code to visualize the results.
 
 ### Dependencies
-PyTorch
-Matplotlib
-PIL
-os
-CUDA GPU acceleration
+- PyTorch
+- Matplotlib
+- PIL
+- os
+- CUDA GPU acceleration
 
 ## Conclusion
 This repository provides a robust framework for deep image matting with custom functionalities for loss computation and dataset handling. It also includes comprehensive error metrics and evaluation functionalities to analyze and visualize the model's performance.
