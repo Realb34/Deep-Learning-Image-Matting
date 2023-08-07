@@ -12,8 +12,8 @@ def gradient_error(pred, target):
 model = DeepMatting().to(device)
 alpha_loss = AlphaLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-dataset = CustomDataset('C:\\Users\\Riley\\Desktop\\Training data\\train\\images',
-                        'C:\\Users\\Riley\\Desktop\\Training data\\train\\masks')
+dataset = CustomDataset('C:PATH TO TRAINING IMAGES',
+                        'C:PATH TO TRAINING MASKS')
 dataloader = DataLoader(dataset, batch_size=189, shuffle=False)
 best_loss = float('inf')
 
