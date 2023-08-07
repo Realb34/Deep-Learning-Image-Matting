@@ -1,0 +1,56 @@
+def sad_score(pred, target):
+    return torch.sum(torch.abs(pred - target))
+def mse_score(pred, target):
+    return torch.mean((pred - target) ** 2)
+def gradient_error(pred, target):
+    pred_grad_x = torch.abs(pred[:, :, :, :-1] - pred[:, :, :, 1:])
+    pred_grad_y = torch.abs(pred[:, :, :-1, :] - pred[:, :, 1:, :])
+    target_grad_x = torch.abs(target[:, :, :, :-1] - target[:, :, :, 1:])
+    target_grad_y = torch.abs(target[:, :, :-1, :] - target[:, :, 1:, :])
+    return torch.mean(torch.abs(pred_grad_x - target_grad_x)) + torch.mean(torch.abs(pred_grad_y - target_grad_y))
+
+model = DeepMatting().to(device)
+alpha_loss = AlphaLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+dataset = CustomDataset('C:\\Users\\Riley\\Desktop\\Training data\\train\\images',
+                        'C:\\Users\\Riley\\Desktop\\Training data\\train\\masks')
+dataloader = DataLoader(dataset, batch_size=189, shuffle=False)
+best_loss = float('inf')
+
+for epoch in range(1500):
+    while True:
+        try:
+            running_loss = 0.0
+            print(f"----- Epoch {epoch + 1} -----")
+
+            for i, data in enumerate(dataloader, 0):
+                inputs, masks = data
+                optimizer.zero_grad()
+                outputs = model(inputs)
+                loss = alpha_loss(outputs, masks)
+                loss.backward()
+                optimizer.step()
+                running_loss += loss.item()
+
+                print(f"Batch: {i + 1}, Current loss: {loss.item()}")
+
+                sad = sad_score(outputs, masks)
+                mse = mse_score(outputs, masks)
+                g_error = gradient_error(outputs, masks)
+
+                print(f"Batch: {i + 1}, SAD: {sad}, MSE: {mse}, Gradient Error: {g_error}")
+
+            epoch_loss = running_loss / len(dataloader)
+            print(f"Loss after epoch {epoch + 1}: {epoch_loss}")
+
+            if epoch_loss < best_loss:
+                best_loss = epoch_loss
+                torch.save(model.state_dict(), 'best_model.pt')
+
+            break
+
+        except Exception as e:
+            print("CUDA error occurred, retrying the epoch on CPU")
+            print(str(e))
+            device = torch.device('cpu')
+            model.to(device)
