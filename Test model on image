@@ -1,0 +1,20 @@
+test_image_path = r"C:PATH TO TEST IMAGE"
+test_image = Image.open(test_image_path).convert('RGB').resize((224, 224))
+test_image_tensor = ToTensor()(test_image).unsqueeze(0).to(device)
+model.load_state_dict(torch.load('best_model.pt'))
+model.eval()
+with torch.no_grad():
+    output = model(test_image_tensor)
+output_mask = output.squeeze(0)
+masked_image = test_image_tensor * output_mask
+output_image = ToPILImage()(output_mask.cpu())
+masked_image = ToPILImage()(masked_image.squeeze(0).cpu())
+
+fig, ax = plt.subplots(1, 3)
+ax[0].imshow(test_image)
+ax[0].set_title('Original')
+ax[1].imshow(output_image, cmap='gray')
+ax[1].set_title('Output mask')
+ax[2].imshow(masked_image)
+ax[2].set_title('Masked Image')
+plt.show()
